@@ -1,2 +1,2 @@
 # katek
-Diploma munka program
+Diploma munka program helye.
