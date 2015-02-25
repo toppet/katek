@@ -1,0 +1,2 @@
+# katek
+Diploma munka program
