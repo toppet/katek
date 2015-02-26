@@ -127,7 +127,7 @@ if(!isset($login_session) || !isset($_SESSION['permission_level']))
                         }
                     });   
                 }*/
-                
+                /* Adatbázis adatok törlése */
                $('#clearDatabase').click(function(){
                  var clear = confirm("Biztos törlöd?");
                    
