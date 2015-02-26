@@ -1,0 +1,122 @@
+body{
+    font-family: 'Levenim MT';
+    margin:0;
+    padding:0;
+}
+
+#header {
+    margin: 0;
+    padding: 0;
+    background-color: #1e81cc;
+    width: 100%;
+    text-align: center;
+}
+
+#header img{
+    margin:0 auto 0 auto;
+    padding-top: 5px;
+    width: 200px;
+}
+
+nav {
+    background:#1e81cc;
+    width:100%;
+    padding-bottom:22px;
+    margin:0 auto 0 auto;
+    text-align:center;
+}
+nav ul{
+    margin:10px 0 -30px 0;
+    padding:0;
+}
+
+nav ul li {
+    display: inline;
+    position: relative;
+}
+
+/*nav{
+    float:right;
+    position:relative;
+    left:-50%;
+    text-align:left;
+}
+nav ul{
+    list-style:none;
+    position:relative;
+    left:50%;
+}*/
+
+nav ul li {
+    display:inline-table;
+}
+
+nav ul li:hover {
+    background:grey;
+}
+
+nav ul li a {
+    display:block;
+    padding:0 20px;
+    color:#fff;
+    text-decoration: none;
+}
+nav ul li ul {
+    position:absolute;
+    text-align:center;
+    background:#1e81cc;
+    margin:0;
+    width:360px;
+}
+
+nav .fallback, nav .second-level{
+    display:none;
+}
+
+nav .fallback li{
+}
+nav .fallback li a{
+
+}
+
+nav .fallback li a:hover {
+    color:#000;
+    background:#aaa; 
+}
+
+/*nav .second-level{
+    width:150px;
+}
+nav .second-level li{
+    padding:0;
+    margin:0;
+    float:left;
+    width: 100%;
+}
+
+nav .second-level li a{
+    padding:0 10px 0;
+    margin:0;
+}
+
+nav .second-level li a:hover{
+    background-color:red;
+    color:#fff;
+}*/
+
+#login{
+    text-align: center;
+    color: #fff;
+    position: absolute;
+    margin: 10px 10px 0 0;
+    right: 0;
+    font-size: 75%;
+
+}
+#login a{
+    color: #fff;
+    text-decoration: none;
+}
+#login a:hover{
+    text-decoration: underline;
+}
