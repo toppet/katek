@@ -6,9 +6,9 @@ session_start();
 $user_check=$_SESSION['login_user'];
 $permission_level = $_SESSION['permission_level'];
 
-$ses_sql=mysql_query("SELECT username FROM users WHERE username='$user_check'");
+$ses_sql=mysqli_query("SELECT username FROM users WHERE username='$user_check'");
 
-$row=mysql_fetch_array($ses_sql);
+$row=mysqli_fetch_array($ses_sql);
 
 $login_session=$row['username'];
 
