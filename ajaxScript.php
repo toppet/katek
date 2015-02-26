@@ -509,7 +509,7 @@ $responseText .= "<script>console.log('query_hibas: ".round($msc*1000,3)." ms')<
 
     /* ------------- Előre kiszámolt elkészülési idő ------------------ */
 
-    $planned = date("Y-m-d H:i",$f+$e); //formázott várható befejezési idő
+    //$planned = date("Y-m-d H:i",$f+$e); //formázott várható befejezési idő
 
     //------------ Expected Information ------------- //
 
@@ -524,7 +524,7 @@ $responseText .= "<script>console.log('query_hibas: ".round($msc*1000,3)." ms')<
         return $x;
     }
 
-   if($expected>($f+$e)){
+   /*if($expected>($f+$e)){
 
         $start = date("Y-m-d H:i",$expected);
         $end = date("Y-m-d H:i",($f+$e));
@@ -549,14 +549,17 @@ $responseText .= "<script>console.log('query_hibas: ".round($msc*1000,3)." ms')<
         $elteres = checkTime(floor($seconds_diff/3600)).":".checkTime((($seconds_diff/60)%60));
 
         $keses = "<p style='color:green;'><img src='images/nodelay.png' alt='delay' style='width:75px; margin:0; padding:0;'> +".$elteres."</p>";
-    }
+    }*/
 
     // ---------- TÁBLÁZAT KIÍRÁS ------ //
     $responseText .= "<table id='production_time'>";
-    $responseText .= "<tr><th class='planned_end_time'>Planned End Time: </th><th class='delay'>Delay</th><th class='expected_end_time'>Expected End Time</th></tr>";
-    $responseText .= "<tr><td class='planned_end_time' style='font-weight: bold;'>".$planned."</td>";
+    //$responseText .= "<tr><th class='planned_end_time'>Output/shift</th><th class='delay'>Delay</th><th class='expected_end_time'>Expected End Time</th></tr>";
+    $responseText .= "<tr><th class='planned_end_time'>Output/shift</th><th class='expected_end_time'>Expected End Time</th></tr>";
+    //$responseText .= "<tr><td class='planned_end_time' style='font-weight: bold;'>".$planned."</td>";
+    $responseText .= "<tr><td class='output' style='font-weight: bold;'>".$norma."</td>";
 
-    $responseText .= "<td class='delay' style='background-color: #fff; border-bottom:none;'>".$keses."</td>";
+    //$responseText .= "<td class='delay' style='background-color: #fff; border-bottom:none;'>".$keses."</td>";
+    //$responseText .= "<td class='delay' style='background-color: #fff; border-bottom:none;'>".$keses."</td>";
 
     $responseText .= "<td class='expected_end_time'>".date("Y-m-d H:i",$expected)."</td>";
     $responseText .= "</tr>";
