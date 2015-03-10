@@ -11,8 +11,8 @@ if(!$conn){
     $resp =  "<p> Cannot connect to database... :( </p><p> Trying to reestablish connection.</p>";
     $arr["errconn"] =  $resp;
     echo json_encode($arr);
-    die();
-
+    die($resp);
+    exit();
 }else{
     date_default_timezone_set('Europe/Budapest');
     ini_set('date.timezone', 'Europe/Budapest');

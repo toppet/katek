@@ -12,7 +12,7 @@ if(!$login_result){
 }
 
 $local_file = "local_smt_output.xls";
-$server_file = "/var/www/SMT Output.xlsx";
+$server_file = "/var/www/SMT_OUTPUT/SMT Output.xlsx";
 
 // download server file
 /*if (ftp_get($conn_id, $local_file, $server_file,  FTP_BINARY)){

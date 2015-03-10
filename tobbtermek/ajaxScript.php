@@ -21,7 +21,7 @@ if(!$conn){
 
     $arr['errconn'] = 1;
     echo json_encode($arr);
-    die($responseText);
+    die(json_encode($responseText));
     exit();
 }
     
@@ -61,6 +61,8 @@ if(!$conn){
     $muszak_kezd = date("Y-m-d 05:55:55");
     $interval = '30';
     $most = date("Y-m-d H:i:s");
+    $id = $_GET['id'];
+
 
 /* ------ 
 Szöveges fájl készítése annak érdekében, hoyg a lekérdezések, 
@@ -77,6 +79,7 @@ $check_time = 600; //mértékegység: (sec) ( 10 perc = 600, 1 óra = 3600)
     ezért töröljük a fájlt annak érdekében, hogy az ellenőrző folyamatot újraindítsuk.
 ----- */
 
+
 if(file_exists($check_file) && (time() - $check_time < filemtime($check_file))){
     unlink($check_file);   
 }else{
@@ -86,7 +89,6 @@ if(file_exists($check_file) && (time() - $check_time < filemtime($check_file))){
     fwrite($tmp, $txt);
     fclose($tmp);
 }
-    
     
 /* ----- LEKÉRDEZEM, HOGY MI VOLT A LEGUTÓBB MÓDOSÍTOTT TERMÉK AZ ADOTT SORON ÉS HA AZ KÜLÖNBÖZIK A JELENLEGI TERMÉKTŐL AKKOR A RENDSZERT ÁTÁLLÍTOM ARRA ----- */
 $msc=microtime(true);
@@ -125,7 +127,6 @@ $recent_ordernr_query = "SELECT
         session_destroy(); //az adott termékre vonatkozó $_SESSION változókat megsemmisítem.
         
         echo json_encode($arr);
-        die();
         exit();
     }  
 /* --------------- end recent_ordernr_query ----------------- */
@@ -144,7 +145,8 @@ $recent_ordernr_query = "SELECT
         $pid_row = mysqli_fetch_array($pid_res);
         
         if(!$pid_res){
-            die("nemjó");
+            $arr['error'] = "recent_ordernr_query_error";
+            die(json_encode($arr));
             exit();
         }
 
@@ -185,7 +187,9 @@ $recent_ordernr_query = "SELECT
         $responseText .= "<script>console.log('elso_db_po_query: ".round($msc*1000,3)." ms')</script>";
         
         if(!$first_done_res){
-            die("elso_db_po_query nem jó");
+            $arr['error'] = "elso_db_query_error";
+            die(json_encode($arr));
+            exit();
         }
         
         $first_done_date_arr = mysqli_fetch_array($first_done_res);
@@ -227,7 +231,11 @@ if( (!isset($_SESSION['side']) || empty($_SESSION['side'])) && $doubleSide == 0)
     $msc = microtime(TRUE)-$msc;
     $responseText .= "<script>console.log('top_or_bottom_query: ".round($msc*1000,3)." ms')</script>";
     
-    if(!$top_or_bottom_res){ die("top_or_bottom_query error");  }
+    if(!$top_or_bottom_res){ 
+        $arr['error'] = "top_or_bottom_query error";
+        die(json_encode($arr));
+        exit();
+    }
     
     $top_or_bottom = mysqli_fetch_array($top_or_bottom_res);
     
@@ -325,7 +333,9 @@ $responseText .= "<script>console.log('bottom_query: ".round($msc*1000,3)." ms')
     $responseText .= "<script>console.log('top_bottom_db_query: ".round($msc*1000,3)." ms')</script>";
     
         if(!$top_bottom_db_res){
-            die("nemjó a topbottomquery");
+            $arr['error'] = "nemjó a topbottomquery";
+            die(json_encode($arr));
+            exit();
         }
         // összeadom a top és bottom oldalon egyező recNr-ök számát (ideális esetben pl.: 5+0 = 5)
         $osszes_elkeszultDB = mysqli_num_rows($top_bottom_db_res);
@@ -360,7 +370,10 @@ $responseText .= "<script>console.log('bottom_query: ".round($msc*1000,3)." ms')
 
             $db_result = mysqli_query($conn,$db_query);
             
-            if(!$db_result){ die("db_query hiba"); }
+            if(!$db_result){ 
+                $arr['error'] = 'db_query_hiba';
+                die(json_encode($arr));
+            }
     
             $msc=microtime(true)-$msc;
             $responseText .= "<script>console.log('db_query: ".round($msc*1000,3)." ms')</script>";
@@ -474,6 +487,12 @@ $msc=microtime(true);
 
     $hibas_db = 0;
     $hibas_res = mysqli_query($conn,$query_hibas);
+
+    if(!hibas_res){
+        $arr['error'] = "query_hibas error";
+        die(json_encode($arr));
+        exit();
+    }
 
 $msc=microtime(true)-$msc;
 $responseText .= "<script>console.log('query_hibas: ".round($msc*1000,3)." ms')</script>";
@@ -648,12 +667,12 @@ $responseText .= "<script>console.log('query_hibas: ".round($msc*1000,3)." ms')<
         if(!$production_done_res){
             $arr["error"] =  'product_sample update error...';
             $arr['p_code'] = $product_code;
-            echo json_encode($arr);
-            die();
+            
+            die(json_encode($arr));
             exit();
         }
         
-        session_unset(); //SESSION változók felszabadítása
+        session_destroy(); //SESSION törlése
     }
 
     $hibatlandb = $osszes_elkeszultDB-$hibasdb;
@@ -753,7 +772,9 @@ $msc=microtime(true);
     $hibas_elemek_szama = array();
 
     if(!hiba_result){
-        $responseText = "Hiba hibatipus_query..";
+        $arr['error'] = "Hiba hibatipus_query..";
+        die(json_encode($arr));
+        exit();
     }
 
     while($error_row = mysqli_fetch_array($hiba_result)){

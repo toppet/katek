@@ -249,14 +249,14 @@
             
 
             function lekerdez() {
-                // amíg a lekérdezés tart, addig a számláló áll, és megjelenik a töltést jelző animáció
-                    clearTimeout(t);
-                    clearTimeout(error_flash);
                 
-                    $('.response').html("<div id='buffer' style='margin-top: 250px;text-align:center;'><img src='images/loading-circle.gif' style='width:50px;' alt=''/><p>Fetching data...</p></div>");
-                // ----------
+                clearTimeout(t);
+                clearTimeout(error_flash); // kikapcsolom a képernyő villogást
+                    
+                // amíg a lekérdezés tart, addig a számláló áll, és megjelenik a töltést jelző animáció
+                $('.response').html("<div id='buffer' style='margin-top: 250px;text-align:center;'><img src='images/loading-circle.gif' style='width:50px;' alt=''/><p>Fetching data...</p></div>");
                
-                x = 0;
+                x = 0; // a hozzad számlálójának értékét nullázom
 
                 // ellenőrzöm, hogy fut-e valamilyen lekérdezés
                 function testFile() {
@@ -285,16 +285,26 @@
                         dataType: 'json',
                         success: function (response) {
                             
-                            hozzaad();    
+                            hozzaad(); //elindítom a számlálót  
 
-                            if (response.emailElkuldve == 1) {
-                                emailElkuldve = 1;
-                            }
-
-                            // Ha a soron már egy másik termék van ellenőrzés alatt, akkor váltson át egyből arra,
-                            // függetlenül attól, hogy a jelenlegi elkészült-e.
-
-                            if(response.atallas != undefined && response.atallas == true){
+                            if(response.errconn != undefined && !empty(response.errconn)){
+                                
+                                // Ha hiba van a csatlakozásban.
+                                $(".response").html(response.errconn);
+                                $(".szamlalo").css('display', 'none');
+                                setTimeout(function(){lekerdez();}, 10000);
+                                
+                            }else if (response.error != undefined) {
+                                
+                                //ha bármilyen másik hiba van
+                                $(".response").html(response.error);
+                                $(".szamlalo").css('display', 'none');
+                                setTimeout(function(){lekerdez();}, 10000);
+                                
+                            }else  if(response.atallas != undefined && response.atallas == true){
+                                // Ha a soron már egy másik termék van ellenőrzés alatt, akkor váltson át egyből arra,
+                                // függetlenül attól, hogy a jelenlegi elkészült-e.
+                                
                                 //alert("Product_code: "+response.atallas_kod);
                                 // $(".response").html("At kellene allni erre: "+response.atallas_kod);
                                 //$(".response").append(", amihez a PO: "+productPOArray[response.array_index]);
@@ -308,59 +318,45 @@
                                         $(".response").append(response);
                                     }
                                 });
-                            }
-
-                            // Ha hiba van a csatlakozásban.
-                            if(response.errconn != undefined && !empty(response.errconn)){
-                                $(".response").html(response.errconn);
-                                $(".szamlalo").css('display', 'none');
-                                setTimeout(function(){lekerdez();}, 10000);
-                            }else if (response.error != undefined) {
-                                //ha bármilyen másik hiba van
-                                $(".response").html(response.error);
-                                $(".szamlalo").css('display', 'none');
-                                setTimeout(function(){lekerdez();}, 10000);
-                            }else{
-                                if(response.high_fail_rate == true){
-                                  error_flash = setInterval(function(){
+                            }else if(response.high_fail_rate == true){
+                                  // Ha a hibaarány 2% fölött van, akkor villogtatom a képernyőt
+                                error_flash = setInterval(function(){
                                        $("body").effect('highlight',{color:"red"},750);
                                    },3000);
-                                }
-                                $('.response').html(response.responseText);
+                                
+                            }else{
+                                
+                   //KIÍRATOM AZ EREDMÉNYT
+                                $('.response').html(response.responseText);    
                             }
-
-                            if (response.kesz) {
+                            
+                            // Ha a termék elkészült
+                            if(response.kesz) {
                                 $('.dial').val('done');
 
                                 clearInterval(error_flash);
                                 clearTimeout(t);
-                                //az exact_endtime az ajaxscript phpan van deklarálva
-                                //$("#exact_endtime").html(response.tenyleges);
-                                $(".delay p").html(response.tenyleges);
-                                $(".delay p").css("font-size",'25px');
-                                if (aktTermek == (termekdb - 1)) {
 
+                                if (aktTermek != (termekdb - 1)) {                               
+                                    
+                                    $('.done').append("<h3 style='color:red;'>Next product is loading...</h3>");
+                                    setTimeout(function(){getProductList();}, 15000); //terméklista lekérése
+                                    
+                                }else {
+                                    
                                     // ha az utolsó termék is elkészült
                                     $('.done').html('<p>All required products are manufactured!</p>');
-
-                                    clearTimeout(t); //számláló időzítő leállítása
                                     setTimeout(function(){getProductList();}, 15000); //terméklista lekérése
-                                } else {
-                                    $('.done').append("<h3 style='color:red;'>Next product is loading...</h3>");
-
-                                    clearTimeout(t); //számláló időzítő leállítása
-                                    setTimeout(function(){getProductList();}, 15000); //terméklista lekérésee
                                 }
-                            }
-                            $("#page_wrapper").append()
-                        }
-                    });
-                }
-
-                });
-            }
+                                
+                            } /* -- END if(response.kesz) -- */
+                        }/* -- END ajaxcript.php ajax.success -- */
+                    }); /* -- END ajaxcript.php ajax -- */
+                }   /* -- END filexists.success ELSE --*/
+            }); /* -- END fileExists.success -- */  
+        }       /* -- END lekerdez() -- */
             
-            /*-----  /lekerdez ----- */
+            
 
             $(".dial").knob().trigger(
                  'configure', {
@@ -378,11 +374,11 @@
                         return ido;
                      }
                  }
-            );
+            ); /* -- END dial.knob -- */
             
             var x = parseInt($('.dial').val());
-            // t, a hozzad függvényhez tartozó időváltozó...
-            var t;
+            
+            var t; // t, a hozzad függvényhez tartozó időváltozó...
             var lefutascount = 1;
             
             function hozzaad() {
@@ -410,9 +406,7 @@
                 
                 $('.dial').val(x).trigger('change');
                 t = setTimeout('hozzaad()', 1000);
-            }
-            
-            
+            } /* -- END hozzaad() -- */
         </script>
     </body>
 </html>
