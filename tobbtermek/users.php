@@ -1,16 +1,18 @@
 <?php
 session_start();
-if(!isset($_SESSION['login_user'])){
+if(!isset($_SESSION['login_user']) || !isset($_SESSION['permission_level'])){
     header("location: index.php");
     exit();
 }
+$permission_level = $_SESSION['permission_level'];
 ?>
 <html>
     <head>
+        <title>User Management</title>
+        <meta charset="UTF-8">
+        <link type="text/css" href="css/header_design.css" rel="stylesheet"/>
         <script src="js/jquery-2.0.3.min.js"></script>
         <script src="js/jquery-ui-1.10.4.min.js"></script>
-        <title>User Management</title>
-        <link type="text/css" href="css/header_design.css" rel="stylesheet"/>
         <style>
             body{
                 text-align:center;

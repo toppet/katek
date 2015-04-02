@@ -12,7 +12,6 @@ session_start();
 $conn = mysqli_connect("10.180.8.23","guest","GuestPass!","traceability"); // kapcsolódás az adatbázishoz
 
 $responseText = "";
-
 $arr = array();
 
 if(!$conn){
@@ -35,6 +34,8 @@ if(!$conn){
 
     $aoi;
     $side;
+    $elkeszulesi_ido = 0;  // az összes legyártott darabszám elkészülési ideje másodpercben, 
+                            //az első és utolsó darab elkészülési idejének különbsége
     //$emailElkuldve;
 
 //$responseText .= "<script type='text/javascript'> console.clear(); </script>";
@@ -63,7 +64,6 @@ if(!$conn){
     $most = date("Y-m-d H:i:s");
     $id = $_GET['id'];
 
-
 /* ------ 
 Szöveges fájl készítése annak érdekében, hoyg a lekérdezések, 
 ne egy egyszerre fussanak ezzel leterlhelve a belső hálózatot
@@ -78,8 +78,6 @@ $check_time = 600; //mértékegység: (sec) ( 10 perc = 600, 1 óra = 3600)
     hogy valami hiba történt az egyik lekérdezésnél (példűul megszakadt a kapcsolat), 
     ezért töröljük a fájlt annak érdekében, hogy az ellenőrző folyamatot újraindítsuk.
 ----- */
-
-
 if(file_exists($check_file) && (time() - $check_time < filemtime($check_file))){
     unlink($check_file);   
 }else{
@@ -113,7 +111,7 @@ $recent_ordernr_query = "SELECT
 
     $recent_order_number = mysqli_fetch_array($recent_res);
 /*  
-    Ha a visszaadott po nem egyezik meg a most vizsgált termékkel ÉS benne van a legyártandó termékeket tároló tömbben, akkor váltunk
+    Ha a visszaadott po nem egyezik meg a most vizsgált termékkel ÉS szerepel a legyártandó termékeket tároló tömbben, akkor váltunk
 */
     if( ($po != $recent_order_number['orderNr']) && in_array($recent_order_number['orderNr'],$productPOArray) ){
         
@@ -124,16 +122,19 @@ $recent_ordernr_query = "SELECT
         $arr['atallas'] = TRUE;
         $arr['atallas_orderNr'] = $recent_order_number['orderNr'];
         
-        session_destroy(); //az adott termékre vonatkozó $_SESSION változókat megsemmisítem.
+        //A termékre vonatkozó $_SESSION adatok törlése
+        unset($_SESSION["pid"]);
+        unset($_SESSION["product_name"]);
+        unset($_SESSION["doubleSide"]);
+        unset($_SESSION["first_done_date"]);
+        unset($_SESSION["side"]);
         
         echo json_encode($arr);
         exit();
     }  
 /* --------------- end recent_ordernr_query ----------------- */
 
-
     if((!isset($_SESSION['pid']) || empty($_SESSION['pid'])) && (!isset($_SESSION['product_name']) || empty($_SESSION['product_name']))){
-
         $query_pid = "SELECT 
                        productId as 'pid', productName as 'name', doubleSide as 'doubleSide'
                     FROM
@@ -201,15 +202,12 @@ $recent_ordernr_query = "SELECT
     $elso_db_kesz_datum = $_SESSION['first_done_date'];
 /* ------ end $elso_db_po_query ------ */
 
-
-
 //    Az egyoldalas terméknél a adott top vagy bottom oldal meghatározása, azért,
 //    hogy a lekérdezésnél ne kelljen külön a top és bottom oldara ellenőrzni
 
 if( (!isset($_SESSION['side']) || empty($_SESSION['side'])) && $doubleSide == 0){
     
-    $msc = microtime(TRUE);
-    
+  $msc = microtime(TRUE);
     $top_or_bottom_query = "SELECT 
                                 r2.lastStation AS 'station'
                             FROM
@@ -227,8 +225,7 @@ if( (!isset($_SESSION['side']) || empty($_SESSION['side'])) && $doubleSide == 0)
                             LIMIT 1";
     
     $top_or_bottom_res = mysqli_query($conn,$top_or_bottom_query);
-    
-    $msc = microtime(TRUE)-$msc;
+  $msc = microtime(TRUE)-$msc;
     $responseText .= "<script>console.log('top_or_bottom_query: ".round($msc*1000,3)." ms')</script>";
     
     if(!$top_or_bottom_res){ 
@@ -238,7 +235,6 @@ if( (!isset($_SESSION['side']) || empty($_SESSION['side'])) && $doubleSide == 0)
     }
     
     $top_or_bottom = mysqli_fetch_array($top_or_bottom_res);
-    
     $_SESSION['side'] = ($top_or_bottom['station'] == $aoi.'070')?$aoi."070":$aoi.'071';
 }
 
@@ -246,7 +242,6 @@ $side = $_SESSION['side'];
 
 /* ----- end top_or_bottom_query ----- */
 
-    
 /*  ---------- DARAB ----------- */
 if($doubleSide == 1){    
     $msc=microtime(true);
@@ -325,7 +320,6 @@ $responseText .= "<script>console.log('bottom_query: ".round($msc*1000,3)." ms')
                                 (r2.changeDate BETWEEN '".$elso_db_kesz_datum."' AND '".$most."')
                                     AND (r2.lastStation = '".$aoi."071')
                                     AND (orderNr = '".$po."')
-                            GROUP BY r2.recNr
                             LIMIT ".$db;
         $top_bottom_db_res = mysqli_query($conn,$top_bottom_db_query);
     
@@ -390,7 +384,6 @@ $responseText .= "<script>console.log('bottom_query: ".round($msc*1000,3)." ms')
             $db_kiiras = $osszes_elkeszultDB;
         }*/
     }
-
 
 /* ------ ADOTT MŰSZAKBAN ELKÉSZÜLT DARABSZÁM ------ */
 /* ------------------------------------------------- */
@@ -649,14 +642,16 @@ $responseText .= "<script>console.log('query_hibas: ".round($msc*1000,3)." ms')<
         
     $responseText .= "<script>console.log('last_query: ".round($msc*1000,3)." ms')</script>";
         mysql_free_result($last_result); // memória felszabadítás
-
+        
         $last_product_row = mysqli_fetch_array($last_result);
         // Ha az utolsó darab is elkészült, akkor a késés nem számolom tovább és beállítom az utolsó elkészült darab idejéhez
 
         $keses = $last_product_row['changeDate'];
         $arr['tenyleges'] = $last_product_row['changeDate'];
         $arr['kesz'] = TRUE;
-
+        
+        $elkeszulesi_ido = strtotime($last_product_row['changeDate'])-strtotime($elso_db_kesz_datum);
+        
         // ----- Update Production ----- //
         $update_production_status = mysqli_connect("10.10.1.205","root","");
 
@@ -671,8 +666,12 @@ $responseText .= "<script>console.log('query_hibas: ".round($msc*1000,3)." ms')<
             die(json_encode($arr));
             exit();
         }
-        
-        session_destroy(); //SESSION törlése
+        //A termékre vonatkozó SESSION adatok törlése
+        unset($_SESSION["pid"]);
+        unset($_SESSION["product_name"]);
+        unset($_SESSION["doubleSide"]);
+        unset($_SESSION["first_done_date"]);
+        unset($_SESSION["side"]); 
     }
 
     $hibatlandb = $osszes_elkeszultDB-$hibasdb;
@@ -737,7 +736,6 @@ $responseText .= "<script>console.log('query_hibas: ".round($msc*1000,3)." ms')<
     /*if($elkeszultDB >= $db){
         include_once('ExcelWriter/kiir.php'); 
     }
-
     $arr['emailElkuldve'] = $emailElkuldve;
  */
 

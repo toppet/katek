@@ -5,13 +5,17 @@
          $email_kiiras = TRUE;
          
          session_start();
-         $cleared = 0;
+         $cleared = 0; 
          
+         // a holnap újratöltésekor törlésre kerülnek az összes termékkel kapcsolatos $_SESSION változók
          if($cleared == 0){
-            session_unset();
+            unset($_SESSION["pid"]);
+            unset($_SESSION["product_name"]);
+            unset($_SESSION["doubleSide"]);
+            unset($_SESSION["first_done_date"]);
+            unset($_SESSION["side"]);
             $cleared++;
-         }
-         
+         }    
 ?>
 <html>
 <head>
@@ -30,7 +34,6 @@
     <link rel="stylesheet" type="text/css" href="css/popup_design.css"/>
     <link rel="stylesheet" type="text/css" href="css/ajax_proba_design.css"/>
     <!--  /////////////////////  -->
-
 
     <script>
         $(document).ready(function(){
@@ -247,7 +250,6 @@
             var eredmenyKiirva = 0;
             var error_flash;
             
-
             function lekerdez() {
                 
                 clearTimeout(t);
@@ -271,7 +273,7 @@
  // ha befejeződött a fájl ellenőrző ajax script akkor eldöntjük, hogy mehet-e a lekérdezés vagy sem
             fileExists.success(function (response) {
                 if(response['exists']){
-                    console.log("lekerdezes, folyamatban, varunk par masodpercet...");
+                    console.log("lekerdezes, folyamatban, varunk 5 masodpercet...");
                     clearTimeout(t);
                     setTimeout(function(){lekerdez();}, 5000); // várok 5 másodpercet, mielőtt újra próbálkoznék az ellenőrzéssel
                 }else{
@@ -323,25 +325,22 @@
                                 error_flash = setInterval(function(){
                                        $("body").effect('highlight',{color:"red"},750);
                                    },3000);
-                                
-                            }else{
+                            }
                                 
                    //KIÍRATOM AZ EREDMÉNYT
-                                $('.response').html(response.responseText);    
-                            }
+                            $('.response').html(response.responseText);    
                             
                             // Ha a termék elkészült
                             if(response.kesz) {
                                 $('.dial').val('done');
 
-                                clearInterval(error_flash);
-                                clearTimeout(t);
+                                clearInterval(error_flash); // megszüntetem a hibajelző villogást
+                                clearTimeout(t);            // leállítom a számlálót
 
                                 if (aktTermek != (termekdb - 1)) {                               
-                                    
+                                    // ha a termék elkészült akkor betöltjük a következő terméket
                                     $('.done').append("<h3 style='color:red;'>Next product is loading...</h3>");
                                     setTimeout(function(){getProductList();}, 15000); //terméklista lekérése
-                                    
                                 }else {
                                     
                                     // ha az utolsó termék is elkészült
@@ -354,10 +353,9 @@
                     }); /* -- END ajaxcript.php ajax -- */
                 }   /* -- END filexists.success ELSE --*/
             }); /* -- END fileExists.success -- */  
-        }       /* -- END lekerdez() -- */
+        } /* -- END lekerdez() -- */
             
             
-
             $(".dial").knob().trigger(
                  'configure', {
                      'min': 0,
@@ -382,7 +380,6 @@
             var lefutascount = 1;
             
             function hozzaad() {
- 
                 if (x == 89) {
                     x = 0;
                     getProductList(); // A terméklista frissítése

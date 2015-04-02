@@ -1,4 +1,4 @@
-<div id="login">Logged is as: <?php echo $_SESSION['login_user'];?><br/><a href="logout.php">Log out</a></div>
+<div id="login">Logged is as: <?php echo $_SESSION['login_user']; ?><br/><a href="logout.php">Log out</a></div>
 <div id="header">
     
     <a href="index.php" title="Homepage"><img id="logo" src="images/katek_white.png" alt="Katek Hungary Kft."/></a>
@@ -48,12 +48,18 @@
                     <li><a href="changeProducts.php?id=4">LINE 4</a></li>
                 </ul>
             </li>
+            <?php 
+                if ($permission_level != '2'){
+            ?>
             <li>
                 <a href="output_upload_form.php">Upload SMT Output</a>
             </li>
             <li>
                 <a href="users.php">User management</a>
             </li>
+            <?php
+                }
+            ?>
         </ul>
     </nav>
 </div>

@@ -1,10 +1,11 @@
 <?php
 session_start();
 
-if(!isset($_SESSION['loggedin']) ){
-    header("location:index.php");
+if(!isset($_SESSION['login_user']) || !isset($_SESSION['permission_level'])){
+    header("location: index.php");
     exit();
 }
+$permission_level = $_SESSION['permission_level'];
 ?>
 <html>
     <head>

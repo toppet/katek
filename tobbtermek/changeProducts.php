@@ -4,10 +4,11 @@ session_start();
 include 'simpleXLSX/simplexlsx.class.php';    
 ini_set("default_charset","utf-8");
 
-if(!isset($_SESSION['loggedin'])){
-    header("location: login.php");
+if(!isset($_SESSION['login_user']) || !isset($_SESSION['permission_level'])){
+    header("location: index.php");
     exit();
 }
+$permission_level = $_SESSION['permission_level'];
 
 /* @var $_GET type */
 $id = filter_input(INPUT_GET,'id',FILTER_SANITIZE_STRING);

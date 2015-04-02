@@ -3,25 +3,20 @@ include('config.php');
 ini_set('default-charset','UTF-8');
 setlocale(LC_ALL, 'en_EN');
 session_start();
-$user_check=$_SESSION['login_user'];
+
+$loggedin_user=$_SESSION['login_user'];
 $permission_level = $_SESSION['permission_level'];
 
-$ses_sql=mysql_query("SELECT username FROM users WHERE username='$user_check'");
-
-$row=mysql_fetch_array($ses_sql);
-
-$login_session=$row['username'];
-
-if(!isset($login_session) || !isset($_SESSION['permission_level']))
-{
-    header("Location: login.php");
+if(!isset($loggedin_user) || !isset($_SESSION['permission_level'])){
+    header("location: login.php");
     exit();
 }
 
 ?>
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-2" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <title>KATEK Hungary Kft.</title>
         <link type="text/css" rel="stylesheet" href="css/header_design.css" />
         <script src="js/jquery-2.0.3.min.js"></script>
@@ -30,8 +25,9 @@ if(!isset($login_session) || !isset($_SESSION['permission_level']))
                 margin:0;
             }
             #page_wrapper{
-                width:1375px;
+                width:980px;
                 margin:0 auto 0 auto;
+                text-align:center;
             }
             #loading img{
                 display:block;
@@ -95,13 +91,33 @@ if(!isset($login_session) || !isset($_SESSION['permission_level']))
             .production_icon{
                 width:50px;
             }
+            #btnClear{
+                margin-top:150px;
+            }
+            #clearDatabase{
+                height:50px;
+                background-color:gray;
+                border:2px solid #123;
+                color:#fff;
+                font-size:15px;
+                font-weight:bold;
+                border-radius:25px;
+                padding:15px;
+            }
+            #clearDatabase:hover{
+                cursor:pointer;
+                background-color:#555;
+            }
+            #clearDatabase:focus{
+                outline:0;
+            }
         </style>
         </head>
     <body>
         <?php include('header.php'); ?>
         
         <div id="page_wrapper">
-            <p><input type="button" id="clearDatabase" value="New Day"/></p>
+            <p id="btnClear"><input type="button" id="clearDatabase" value="Clear Database Data"/></p>
             <!--<div id="loading"><img src="images/loading.gif" alt='loading' style="width: 50px;"/></div>-->
             <div id="adatbazis_adatok"></div>
         </div>
@@ -123,15 +139,14 @@ if(!isset($login_session) || !isset($_SESSION['permission_level']))
                             $("#loading").hide();
                             $('#adatbazis_adatok').html(response);
                             $("#adatbazis_adatok").show();
-                            
                         }
                     });   
                 }*/
                 
                $('#clearDatabase').click(function(){
-                 var clear = confirm("Biztos törlöd?");
+                 var clear = confirm("Biztos törli az adatbázis adatokat?");
                    
-                   if(clear == true){
+                   if(clear){
                        $.ajax({
                           url: 'truncate.php',
                            type: 'POST',

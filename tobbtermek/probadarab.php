@@ -7,7 +7,6 @@ $arr = array();
 session_start();
 
 if(!$conn){
-
     $resp =  "<p> Cannot connect to database... :( </p><p> Trying to reestablish connection.</p>";
     $arr["errconn"] =  $resp;
     echo json_encode($arr);
@@ -18,7 +17,7 @@ if(!$conn){
     ini_set('date.timezone', 'Europe/Budapest');
 
     $muszak_kezd = date("Y.m.d."." 05:55:55");
-    $interval = '5';
+    $interval = '5'; // az adatbázis lekérdezésnél ekkora intervallumban vizsgálunk visszamenően
     $most = date("Y-m-d H:i:s");
     
     $product_code = $_POST['productCode'];

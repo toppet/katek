@@ -1,12 +1,20 @@
 <?php
 
-include("config.php");
+$mysql_hostname = "localhost";
+$mysql_user = "root";
+$mysql_password = "";
+$mysql_database = "users";
+
+$db = mysqli_connect($mysql_hostname, $mysql_user, $mysql_password, $mysql_database) or die("Error during connection.");
+
 session_start();
 
-
 // Ha a felhaszáló már be van jelentkezve akkor átirányítom a főoldalra
-if(isset($_SESSION['loggedin'])){
+if(isset($_SESSION['loggedin']) && $_SESSION['permission_level'] == '1'){
     header('location: index.php');
+    exit();
+}else if(isset($_SESSION['loggedin']) && $_SESSION['permission_level'] == '2'){
+    header('location: lineSelection.php');
     exit();
 }
 
@@ -15,14 +23,16 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     $myusername=addslashes(filter_input(INPUT_POST,'username',FILTER_SANITIZE_STRING)); 
     $mypassword=addslashes(filter_input(INPUT_POST,'password',FILTER_SANITIZE_STRING)); 
-    
-    $sql="SELECT id,permission FROM users WHERE username='$myusername' and password='".md5($mypassword)."'";
-    $result=mysql_query($sql);
 
-    while($row=mysql_fetch_array($result)){
+    $sql="SELECT id,permission FROM users WHERE username='".$myusername."' and password='".md5($mypassword)."'";
+    
+    $result=mysqli_query($db,$sql);
+
+    while($row=mysqli_fetch_array($result)){
         $permission_level = $row['permission'];
     }
-    $count=mysql_num_rows($result);
+    
+    $count=mysqli_num_rows($result);
 
     if($count==1){
         
@@ -33,11 +43,12 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         //ellenőrzöm a felhasználói szintet, és aszerint adom meg a jogokat a használathoz.
         switch($_SESSION['permission_level'] ){
             case '3':
-                header('location: ajaxproba.php?id=1');
+                header('location: lineSelection.php');
                 exit();
                 break;
             case '2':
-                
+                header('location: index.php'); //csökkentett jogosultságokkal ellátott felhaszáló 
+                exit();
                 break;
             case '1':
                 header("location: index.php");
@@ -45,10 +56,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 break;
         } 
     }else{
-        $error="Username or Password is invalid<br/>";
+        $error="Username or Password is invalid!<br/>";
     }
 }
-
 ?>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -61,7 +71,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         $(document).ready(function () {
             $('#username').focus();
         });
-
     </script>
 <style type="text/css">
     body {

@@ -15,7 +15,7 @@ if(!mysqli_query($conn,$create_database)){
 }
     
 $create_table = "CREATE TABLE IF NOT EXISTS gyartas.termekek(
-                    pid INT AUTO_INCREMENT NOT NULL,
+                    pid INT UNSIGNED AUTO_INCREMENT NOT NULL,
                     smt INT NOT NULL,
                     product_name VARCHAR(50) NOT NULL,
                     product_code VARCHAR(35) NOT NULL,
@@ -33,6 +33,7 @@ $create_table = "CREATE TABLE IF NOT EXISTS gyartas.termekek(
                     sample_done TINYINT(1) UNSIGNED DEFAULT 0,
                     production_done TINYINT(1) UNSIGNED DEFAULT 0,
                     waiting_to_finish TINYINT(1) UNSIGNED DEFAULT 0,
+                    production_time_final DECIMAL(12,3) DEFAULT 0,
                     PRIMARY KEY(pid)
                 )";
 

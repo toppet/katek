@@ -24,15 +24,13 @@ switch($_SESSION['permission_level'] ){
         break;
 } */
 
-  
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="utf-8" />
         <title>Katek KFT. - Production Line Selection</title>
-        
+        <link type="text/css" rel="stylesheet" href="css/header_design.css" />
         <script src="js/jquery-2.0.3.min.js"></script>
         <style>
             body{
@@ -74,18 +72,28 @@ switch($_SESSION['permission_level'] ){
             .mymenu li{
                 display:inline;
             }
+            #login{
+                top:0;
+                right:0;
+                color:#000;
+            }
+            #login a{
+                color:#000;
+            }
             
         </style>
-        <link type="text/css" rel="stylesheet" href="css/header_design.css" />
+        
     </head>
     <body>
-        <?php include_once('header.php'); ?>
+        <div id="header">
+            <div id="login">Logged is as: <?php echo $_SESSION['login_user']; ?><br/><a href="logout.php">Logout</a></div>
+        </div>
         <div id="selection">
             <ul>
-                <li><a href="productSelect.php?id=1">LINE 1</a></li>
-                <li><a href="productSelect.php?id=2">LINE 2</a></li>
-                <li><a href="productSelect.php?id=3">LINE 3</a></li>
-                <li><a href="productSelect.php?id=4">LINE 4</a></li>
+                <li><a href="ajaxproba.php?id=1">LINE 1</a></li>
+                <li><a href="ajaxproba.php?id=2">LINE 2</a></li>
+                <li><a href="ajaxproba.php?id=3">LINE 3</a></li>
+                <li><a href="ajaxproba.php?id=4">LINE 4</a></li>
             </ul>
         </div>
 
