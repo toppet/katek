@@ -42,18 +42,28 @@ if(!mysqli_query($conn,$create_table)){
     die();
 }
 
-//$tabla_urites = "TRUNCATE TABLE gyartas.termekek";
 
-$tabla_urites = "DELETE FROM gyartas.termekek WHERE smt='".$_POST['sor']."'";
-
-if(!mysqli_query($conn,$tabla_urites)){
-    echo "Hiba a tábla törlésében.<br/>";
-    die();
-}
-    
 $tomb = $_POST['data'];
 $sor_id = $_POST['sor'];
 $termekek = array();
+
+//$tabla_urites = "TRUNCATE TABLE gyartas.termekek";
+// Ha üres terméktömb kerül átadásra akkor minden, az adott sorra vonatkozó adatot törölődik az adatbázisból! 
+if (count($tomb)==0){
+    soradatokTorlese($sor_id,$conn);
+    echo "A sorra vonatkozó adatok törölve!";
+    exit();
+}
+// minden egyes feltöltés előtt töröljük az adott sorra vonatkozó termékeket
+soradatokTorlese($sor_id,$conn);
+function soradatokTorlese($sor_id,$conn){
+    $tabla_urites = "DELETE FROM gyartas.termekek WHERE smt='".$sor_id."'";
+
+    if(!mysqli_query($conn,$tabla_urites)){
+        echo "Hiba a tábla törlésében.<br/>";
+        die();
+    }
+}
 
 // feldarabolom az elküldött adatokat
 for($i=0;$i<count($tomb);$i++){
@@ -64,31 +74,29 @@ for($i=0;$i<count($tomb);$i++){
 //$hi = "INSERT INTO gyartas.termekek (smt,product_name,product_code,norma,ict,tht,fct,assembling,quantity,po,production_time,sample_production) VALUES";
 $hi = "INSERT INTO gyartas.termekek (smt,product_name,product_code,norma,quantity,po,production_time,sample_production) VALUES";
 
-  
+// a for ciklus egy lekérdezésbe fűzi össze a feltöltendő termékeket 
 for($j = 0; $j < count($termekek);$j++){
     $hi.=" ('$sor_id', ";
     
     for($val = 0; $val < count($termekek[$j]); $val++){
            $hi .= "'".$termekek[$j][$val]."'";
         
-        if($val != (count($termekek[$j])-1)){
+        if($val != (count($termekek[$j])-1)){ // itt az egyes termékhez tartozó attributumok kerülnek elválasztásra
             $hi .= ",";
         }
     }
     //$hi .= "'0', '0', '0', '0')";
-    
-    
+
     $hi .= ")";
     
-    if($j != (count($termekek)-1)){
+    if($j != (count($termekek)-1)){ // ezzel a különálló termékek kerülnek elválasztásra
         $hi .= ",";
     }
-
 }
-       
+   
 
 if(!mysqli_query($conn,$hi)){
-    echo ("upload error - Hiba a feltöltésben.");
+    echo ("$hi upload error - Hiba a feltöltésben.");
     die();
 }
 

@@ -1,5 +1,4 @@
 <?php
-
 session_start();
 include 'simpleXLSX/simplexlsx.class.php';    
 ini_set("default_charset","utf-8");
@@ -23,11 +22,6 @@ if(!$conn){
     echo 'productlist.php - Sikertelen csatlakozas...';
     die();
 }
-
-$query = "SELECT * from gyartas.termekek WHERE smt='".$_GET['id']."'";
-
-$result = mysqli_query($conn,$query);
-
 
 $xlsx = new SimpleXLSX('SMT_OUTPUT/SMT Output.xlsx');
 
@@ -59,8 +53,15 @@ foreach( $xlsx->rows() as $r ) {
 $hossz= count($code); // terméktömb hossza
 
 $er ='';
-
 $i = 1;
+
+$query = "SELECT * from gyartas.termekek WHERE smt='".$_GET['id']."'";
+
+$result = mysqli_query($conn,$query);
+//ha az adatbázislekérdezés 0 sort adott vissza akkor megjelenítjük az üzenetet.
+if(mysqli_num_rows($result) == 0){
+    $er = "<p id='no_product'>No data for this production line.</p>";
+}
 
 while($row = mysqli_fetch_array($result)){
     $er .= "<table  class='ui-state-default'>";
@@ -464,7 +465,10 @@ while($row = mysqli_fetch_array($result)){
 
                 $("#addproduct").click(function (e) {
                     
-                    e.preventDefault();
+                    e.preventDefault(); // az alapértelmezett submit funkció tiltása
+                    
+                    // ha a "nincs megjeleníthető termék" üzenet szerepel, de rányomunk a hozzáadás gombra akkor ezt a bekezdést távolítsuk el
+                    $("#no_product").remove(); 
                     
                     if (!ellenorzes()) {
                         return false;
@@ -539,24 +543,32 @@ while($row = mysqli_fetch_array($result)){
                     }
                     
                     var termekTomb = [];
-
+                    
                     for (var i = 0; i < $('table').length; i++) {
                         //termekTomb[i] = termeknev[i] + ', ' + termekkod[i] + ', ' + masiknorma[i] + ', '+ tht[i]+', '+ict[i]+', '+fct[i]+', '+assembling[i]+', '+ termekdb[i] + ', ' + po[i] + ", " + elkeszules[i];
                         termekTomb[i] = termeknev[i] + ', ' + termekkod[i] + ', ' + masiknorma[i] + ', '+ termekdb[i] + ', ' + po[i] + ", " + elkeszules[i]+', '+sampleproduction[i];
                     }
                     
-                    var datastring = "product_name="+termeknev+"&product_code="+termekkod+"&norma="+masiknorma+"&quantity="+termekdb+"&po="+po+"&elkeszul="+elkeszules;
+                    //var datastring = "product_name="+termeknev+"&product_code="+termekkod+"&norma="+masiknorma+"&quantity="+termekdb+"&po="+po+"&elkeszul="+elkeszules+"&sample="+sample;
+                    
+                    var sor_urites = false;
+                    if(termekTomb.length == 0){
+                        var valasz = confirm("Ha üresen tölti fel a terméklistát, akkor a sor adatai törlődnek!");
+                        if (!valasz){
+                            return false;        
+                        }
+                    }
                     
                     $.ajax({
                         url: 'upload.php',
                         type: 'POST',
-                        data: { 'data': termekTomb, 'sor': sor },
+                        data: { 'data': termekTomb, 'sor': sor, 'sor_urites': sor_urites },
                         success: function (response) {
                             // Submit event indítása, ha befejeződött az ajax kérés
                             alert(response);
                         }
                     });
-                    console.log(datastring);
+                    //console.log(datastring);
                 });
                 
 
